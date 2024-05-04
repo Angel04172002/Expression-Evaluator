@@ -14,12 +14,12 @@ namespace Calculator
                 '/'
             };
 
-            Stack<char> operatorsStack = new Stack<char>();
-            Queue<char> numbers = new Queue<char>();
+            Stack<string> operatorsStack = new Stack<string>();
+            Queue<string> numbers = new Queue<string>();
 
 
             string expression = Console.ReadLine();
-            char[] tokens = GetCharArrayFromString(expression);
+            string[] tokens = GetCharArrayFromString(expression);
 
 
             Calculate(tokens, operatorsStack, numbers);
@@ -31,9 +31,9 @@ namespace Calculator
 
         }
 
-        static void MoveOperatorsToQueue(Stack<char> operatorsStack, Queue<char> numbers)
+        static void MoveOperatorsToQueue(Stack<string> operatorsStack, Queue<string> numbers)
         {
-            char operat = operatorsStack.Pop();
+            string operat = operatorsStack.Pop();
 
             while(operatorsStack.Count > 0)
             {
@@ -44,34 +44,57 @@ namespace Calculator
             numbers.Enqueue(operat);
         }
 
-        static char[] GetCharArrayFromString(string text)
+        static string[] GetCharArrayFromString(string text)
         {
-            text = text.Replace(" ", "");
 
-            char[] tokens = new char[text.Length];
+
+            List<string> tokens = new List<string>();
+
+            string currentToken = "";
 
             for (int i = 0; i < text.Length; i++)
             {
-                tokens[i] = text[i];
+                if (text[i] >= '0' && text[i] <= '9')
+                {
+                    currentToken += text[i];
+                    continue;
+                }
+               
+                else if (text[i] == '+' || text[i] == '-' || text[i] == '*' || text[i] == '/')
+                {
+                    tokens.Add(currentToken);
+                    currentToken = "";
+                    tokens.Add(text[i].ToString());
+                    continue;
+                }
+                else
+                {
+                    if (currentToken != string.Empty)
+                    {
+                        tokens.Add(currentToken);
+                        currentToken = "";
+                    }
+
+                    tokens.Add(text[i].ToString());
+                }
+      
             }
 
-            return tokens;
+            return tokens.ToArray();
         }
 
-
-        static void Calculate(char[] tokens, Stack<char> operators, Queue<char> numbers)
+        static void Calculate(string[] tokens, Stack<string> operators, Queue<string> numbers)
         {
             for(int i = 0; i < tokens.Length; i++)
             {
                 var currentToken = tokens[i];
-                var characterCode = (int)currentToken;
 
-                if(currentToken >= '0' && currentToken <= '9')
+                if(int.TryParse(currentToken, out int result) == true)
                 {
                     numbers.Enqueue(currentToken);
                 }
 
-                else if(currentToken == '+' || currentToken == '-' || currentToken == '*' || currentToken == '/')
+                else if(currentToken == "+" || currentToken == "-" || currentToken == "*" || currentToken == "/")
                 {
                     if(CheckForPrecedence(operators, currentToken) == false)
                     {
@@ -80,22 +103,22 @@ namespace Calculator
 
                     operators.Push(currentToken);
                 }
-                else if(currentToken == '(')
+                else if(currentToken == "(")
                 {
                     operators.Push(currentToken);
                 }
-                else if(currentToken == ')')
+                else if(currentToken == ")")
                 {
                     OrderBrackets(operators, numbers, currentToken);
                 }
             }
         }
 
-        static void OrderBrackets(Stack<char> operators, Queue<char> numbers, char currentToken)
+        static void OrderBrackets(Stack<string> operators, Queue<string> numbers, string currentToken)
         {
-            char currentOperator = operators.Peek();
+            string currentOperator = operators.Peek();
 
-            while(currentOperator != '(')
+            while(currentOperator != "(")
             {
                 numbers.Enqueue(currentOperator);
 
@@ -106,7 +129,7 @@ namespace Calculator
                 }
                 else
                 {
-                    currentOperator = '(';
+                    currentOperator = "(";
                 }
             }
 
@@ -115,12 +138,12 @@ namespace Calculator
 
         }
 
-        static void OrderOperators(Stack<char> operators, Queue<char> symbols, char currentToken)
+        static void OrderOperators(Stack<string> operators, Queue<string> symbols, string currentToken)
         {
 
-            char currentOperator = operators.Peek();
+            string currentOperator = operators.Peek();
 
-            while(currentOperator != '+' && currentOperator != '-')
+            while(currentOperator != "+" && currentOperator != "-")
             {
                 symbols.Enqueue(currentOperator);
 
@@ -131,14 +154,14 @@ namespace Calculator
                 }
                 else
                 {
-                    currentOperator = '+';
+                    currentOperator = "+";
                 }
             }
 
             operators.Push(currentToken);
         }
 
-        static bool CheckForPrecedence(Stack<char> operators, char currentOperator)
+        static bool CheckForPrecedence(Stack<string> operators, string currentOperator)
         {
             if(operators.Count == 0)
             {
@@ -147,17 +170,17 @@ namespace Calculator
 
             var stackOperator = operators.Peek();
 
-            if(currentOperator == '+' || currentOperator == '-')
+            if(currentOperator == "+" || currentOperator == "-")
             {
-                if(stackOperator == '*' || stackOperator == '/')
+                if(stackOperator == "*" || stackOperator == "/")
                 {
                     return false;
                 }
              
             }
-            else if(currentOperator == '*' || currentOperator == '/')
+            else if(currentOperator == "*" || currentOperator == "/")
             {
-                if(stackOperator == '+' || stackOperator == '-')
+                if(stackOperator == "+" || stackOperator == "-")
                 {
                     return true;
                 }
