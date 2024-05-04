@@ -23,14 +23,26 @@ namespace Calculator
 
 
             Calculate(tokens, operatorsStack, numbers);
+            MoveOperatorsToQueue(operatorsStack, numbers);
 
-
-            Console.WriteLine(string.Join(" ", tokens));
+            Console.WriteLine(string.Join(" ", numbers));
 
             Console.ReadLine();
 
         }
 
+        static void MoveOperatorsToQueue(Stack<char> operatorsStack, Queue<char> numbers)
+        {
+            char operat = operatorsStack.Pop();
+
+            while(operatorsStack.Count > 0)
+            {
+                numbers.Enqueue(operat);
+                operat = operatorsStack.Pop();
+            }
+
+            numbers.Enqueue(operat);
+        }
 
         static char[] GetCharArrayFromString(string text)
         {
@@ -61,7 +73,10 @@ namespace Calculator
 
                 else if(currentToken == '+' || currentToken == '-' || currentToken == '*' || currentToken == '/')
                 {
-                    CheckForPrecedence(operators, currentToken);
+                    if(CheckForPrecedence(operators, currentToken) == false)
+                    {
+                        OrderOperators(operators, numbers, currentToken);
+                    }
 
                     operators.Push(currentToken);
                 }
@@ -69,22 +84,86 @@ namespace Calculator
                 {
                     operators.Push(currentToken);
                 }
+                else if(currentToken == ')')
+                {
+                    OrderBrackets(operators, numbers, currentToken);
+                }
             }
         }
 
-
-        static bool CheckForPrecedence(Stack<char> operators, char currentOperator)
+        static void OrderBrackets(Stack<char> operators, Queue<char> numbers, char currentToken)
         {
-            var stackOperator = operators.Peek();
+            char currentOperator = operators.Peek();
 
-            if(currentOperator == '+')
+            while(currentOperator != '(')
             {
+                numbers.Enqueue(currentOperator);
 
+                if(operators.Count > 0) 
+                {
+                    operators.Pop();
+                    currentOperator = operators.Peek();
+                }
+                else
+                {
+                    currentOperator = '(';
+                }
             }
 
 
-            return true;
+            operators.Pop();
 
+        }
+
+        static void OrderOperators(Stack<char> operators, Queue<char> symbols, char currentToken)
+        {
+
+            char currentOperator = operators.Peek();
+
+            while(currentOperator != '+' && currentOperator != '-')
+            {
+                symbols.Enqueue(currentOperator);
+
+                if (operators.Count > 0)
+                {
+                    operators.Pop();
+                    currentOperator = operators.Peek();
+                }
+                else
+                {
+                    currentOperator = '+';
+                }
+            }
+
+            operators.Push(currentToken);
+        }
+
+        static bool CheckForPrecedence(Stack<char> operators, char currentOperator)
+        {
+            if(operators.Count == 0)
+            {
+                return true;
+            }
+
+            var stackOperator = operators.Peek();
+
+            if(currentOperator == '+' || currentOperator == '-')
+            {
+                if(stackOperator == '*' || stackOperator == '/')
+                {
+                    return false;
+                }
+             
+            }
+            else if(currentOperator == '*' || currentOperator == '/')
+            {
+                if(stackOperator == '+' || stackOperator == '-')
+                {
+                    return true;
+                }
+            }
+
+            return true;
         }
     }
 }
