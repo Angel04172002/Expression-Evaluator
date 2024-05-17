@@ -1,4 +1,4 @@
-﻿using Calculator.Core.Interfaces;
+using Calculator.Core.Interfaces;
 using Calculator.IO.Interfaces;
 
 namespace Calculator.Core
@@ -35,11 +35,43 @@ namespace Calculator.Core
             Calculate(tokens, operatorsStack, numbers);
             MoveOperatorsToQueue(operatorsStack, numbers);
 
+
+            //int result = CalculateResult(numbers);
+
+
             writer.WriteLine(string.Join(" ", numbers));
 
 
 
             reader.ReadLine();
+        }
+
+
+        private static int CalculateResult(Queue<string> numbers)
+        {
+            Stack<int> results = new Stack<int>();
+
+            while(numbers.Count > 0)
+            {
+                string currentItem = numbers.Dequeue();
+                bool hasParsed = int.TryParse(currentItem, out int currentNumber);
+
+                if(hasParsed)
+                {
+                    results.Push(currentNumber);
+                    continue;
+                }
+
+                int number1 = int.Parse(numbers.Dequeue());
+                int number2 = int.Parse(numbers.Dequeue());
+
+                int result = Evaluator.Evaluate(number2, number1, currentItem);
+
+                results.Push(result);
+            }
+
+            int finalResult = results.Pop();
+            return finalResult;
         }
 
         private static void MoveOperatorsToQueue(Stack<string> operatorsStack, Queue<string> numbers)
@@ -79,17 +111,22 @@ namespace Calculator.Core
                 }
                 else
                 {
-              
+
+                    if (currentToken != string.Empty)
+                    {
+                        tokens.Add(currentToken);
+                        currentToken = "";
+                    }
 
                     tokens.Add(text[i].ToString());
+
                 }
 
+            }
 
-                if (currentToken != string.Empty)
-                {
-                    tokens.Add(currentToken);
-                    currentToken = "";
-                }
+            if (currentToken != string.Empty)
+            {
+                tokens.Add(currentToken);
             }
 
             return tokens.ToArray();
