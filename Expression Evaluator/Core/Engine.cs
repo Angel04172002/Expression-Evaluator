@@ -16,13 +16,6 @@ namespace Calculator.Core
 
         public void Run()
         {
-            var operators = new[]
-            {
-                '+',
-                '-',
-                '*',
-                '/'
-            };
 
             Stack<string> operatorsStack = new Stack<string>();
             Queue<string> numbers = new Queue<string>();
@@ -36,10 +29,10 @@ namespace Calculator.Core
             MoveOperatorsToQueue(operatorsStack, numbers);
 
 
-            //int result = CalculateResult(numbers);
+            int result = CalculateResult(numbers);
 
 
-            writer.WriteLine(string.Join(" ", numbers));
+            writer.WriteLine(string.Join(" ", result));
 
 
 
@@ -62,8 +55,8 @@ namespace Calculator.Core
                     continue;
                 }
 
-                int number1 = int.Parse(numbers.Dequeue());
-                int number2 = int.Parse(numbers.Dequeue());
+                int number1 = results.Pop();
+                int number2 = results.Pop();
 
                 int result = Evaluator.Evaluate(number2, number1, currentItem);
 
@@ -199,7 +192,7 @@ namespace Calculator.Core
                 if (operators.Count > 0)
                 {
                     operators.Pop();
-                    currentOperator = operators.Peek();
+                    currentOperator = operators.Count > 0 ? operators.Peek() : "+";
                 }
                 else
                 {
@@ -207,7 +200,7 @@ namespace Calculator.Core
                 }
             }
 
-            operators.Push(currentToken);
+            //operators.Push(currentToken);
         }
 
         private static bool CheckForPrecedence(Stack<string> operators, string currentOperator)
@@ -239,3 +232,4 @@ namespace Calculator.Core
         }
     }
 }
+
